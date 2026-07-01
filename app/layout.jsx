@@ -6,6 +6,11 @@ export const metadata = {
   title: "Jason Qiu - 视觉设计师作品集",
   description:
     "Jason Qiu 的个人作品集，展示品牌视觉、电商设计、产品渲染与 AI 视觉创作。",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg"
+  },
   keywords: [
     "Jason Qiu",
     "视觉设计师",
