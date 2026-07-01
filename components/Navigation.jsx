@@ -21,16 +21,16 @@ export function Navigation() {
         </Link>
         <div className="flex items-center gap-6">
           <a className="transition hover:text-white" href="/#works">
-            Works
+            作品
           </a>
           <a className="transition hover:text-white" href="/#about">
-            About
+            关于
           </a>
           <a className="transition hover:text-white" href="/#contact">
-            Contact
+            联系
           </a>
           <Link className="hidden transition hover:text-white sm:inline" href="/admin/">
-            Admin
+            管理
           </Link>
         </div>
       </nav>

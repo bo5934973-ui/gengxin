@@ -15,7 +15,7 @@ export function generateMetadata({ params }) {
 
   if (!work) {
     return {
-      title: `Project not found - ${siteContent.site.name}`
+      title: `作品未找到 - ${siteContent.site.name}`
     };
   }
 
@@ -89,7 +89,7 @@ export default function CaseStudyPage({ params }) {
             >
               <Image
                 src={image}
-                alt={`${work.title} image ${index + 1}`}
+                alt={`${work.title} 图片 ${index + 1}`}
                 fill
                 sizes="100vw"
                 className="object-cover"
