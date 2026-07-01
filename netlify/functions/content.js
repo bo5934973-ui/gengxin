@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { connectLambda, getStore } from "@netlify/blobs";
 import defaultContent from "../../public/content/site.json" with { type: "json" };
 
 const STORE_NAME = "portfolio-content";
@@ -38,6 +38,8 @@ function validateContent(content) {
 }
 
 export async function handler(event) {
+  connectLambda(event);
+
   if (event.httpMethod === "OPTIONS") {
     return json(204, {});
   }
