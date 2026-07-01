@@ -1,93 +1,91 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Button } from "@/components/Button";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useLiveContent } from "@/components/LiveContentProvider";
 
 export function Hero() {
   const { scrollY } = useScroll();
-  const lightY = useTransform(scrollY, [0, 900], [0, 120]);
+  const reducedMotion = useReducedMotion();
+  const visualY = useTransform(scrollY, [0, 900], [0, reducedMotion ? 0 : 84]);
+  const fade = useTransform(scrollY, [0, 720], [1, 0.72]);
   const { content } = useLiveContent();
-  const { hero } = content;
+  const { hero, works } = content;
+  const heroWorks = works.slice(0, 3);
 
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden bg-blackBg px-6 pt-24 text-white md:px-20">
-      <motion.div
-        style={{ y: lightY }}
-        className="pointer-events-none absolute left-1/2 top-12 h-[640px] w-[840px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(220,234,255,0.34)_0%,rgba(160,185,225,0.12)_38%,transparent_70%)] blur-2xl"
-      />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),transparent_22%,rgba(255,255,255,0.03)_72%,transparent)]" />
-      <div className="absolute bottom-[-22%] left-1/2 h-[520px] w-[1200px] -translate-x-1/2 rounded-[50%] border border-white/10 bg-white/[0.03] blur-[1px]" />
-
-      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-14 lg:grid-cols-[1fr_0.8fr]">
-        <div className="max-w-4xl">
-          <motion.p
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-6 text-sm font-medium uppercase tracking-[0.18em] text-white/52"
-          >
-            {hero.eyebrow}
-          </motion.p>
+    <section className="relative min-h-[100dvh] overflow-hidden bg-[#f5f5f7] px-5 pb-20 pt-24 text-[#1d1d1f] md:px-10 md:pb-28 md:pt-28 lg:pb-32">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0))]" />
+      <motion.div style={{ opacity: fade }} className="relative z-10 mx-auto flex max-w-[1440px] flex-col items-center text-center">
+        <div className="max-w-5xl">
           <motion.h1
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[64px] font-semibold leading-[0.96] tracking-normal md:text-[96px]"
+            transition={{ duration: 0.82, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl font-semibold leading-none tracking-normal md:text-7xl lg:text-8xl"
           >
             {hero.title}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 max-w-2xl text-xl leading-8 text-white/68 md:text-2xl md:leading-9"
+            transition={{ duration: 0.78, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-4 max-w-3xl text-2xl font-medium leading-9 text-[#1d1d1f] md:mt-5 md:text-4xl md:leading-[1.18]"
           >
             {hero.description}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-10 flex flex-wrap gap-4"
+            transition={{ duration: 0.7, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-7 flex flex-wrap justify-center gap-4"
           >
-            <Button href="#works">{hero.primaryButton}</Button>
-            <Button href="#contact" variant="secondary">
+            <a
+              href="#works"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[#0071e3] px-7 text-base font-medium text-white transition hover:bg-[#0077ed] active:scale-[0.98]"
+            >
+              {hero.primaryButton}
+            </a>
+            <a
+              href="#contact"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-[#0071e3] px-7 text-base font-medium text-[#0071e3] transition hover:bg-[#0071e3] hover:text-white active:scale-[0.98]"
+            >
               {hero.secondaryButton}
-            </Button>
+            </a>
           </motion.div>
         </div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mx-auto aspect-[0.82] w-full max-w-[420px] overflow-hidden rounded-[32px] border border-white/12 bg-white/[0.045] p-4 shadow-glass backdrop-blur-2xl"
+          transition={{ duration: 1, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          style={{ y: visualY }}
+          className="relative mt-12 h-[420px] w-full max-w-[1180px] md:mt-16 md:h-[540px] lg:h-[620px]"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(255,255,255,0.22),transparent_34%),linear-gradient(160deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03)_36%,rgba(255,255,255,0.1))]" />
-          <div className="relative flex h-full flex-col justify-between rounded-[24px] border border-white/12 bg-black/45 p-6">
-            <div className="h-24 rounded-full bg-[radial-gradient(circle,rgba(236,243,255,0.8),rgba(170,196,235,0.16)_36%,transparent_62%)] blur-xl" />
-            <div>
-              <p className="text-sm uppercase tracking-[0.18em] text-white/42">
-                {hero.visualSubtitle}
-              </p>
-              <p className="mt-2 text-3xl font-semibold leading-tight">
-                {hero.visualTitle}
-              </p>
-            </div>
-            <div className="space-y-5">
-              <div className="aspect-square rounded-full border border-white/18 bg-[conic-gradient(from_160deg,#f5f5f7,#797d86,#111,#e8f0ff,#f5f5f7)] p-5 shadow-glow">
-                <div className="h-full rounded-full border border-white/20 bg-blackBg" />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="h-20 rounded-2xl bg-white/10" />
-                <div className="h-20 rounded-2xl bg-white/16" />
-                <div className="h-20 rounded-2xl bg-white/8" />
-              </div>
-            </div>
-          </div>
+          <div className="absolute inset-x-6 bottom-0 h-24 rounded-[50%] bg-black/10 blur-3xl" />
+          {heroWorks.map((work, index) => (
+            <a
+              key={work.slug}
+              href={`/work/?slug=${encodeURIComponent(work.slug)}`}
+              className={[
+                "group absolute overflow-hidden rounded-[28px] bg-white shadow-[0_34px_90px_rgba(30,36,48,0.18)] ring-1 ring-black/5 transition duration-500 hover:-translate-y-2 hover:shadow-[0_40px_120px_rgba(30,36,48,0.24)]",
+                index === 0 ? "bottom-0 left-1/2 z-30 h-[86%] w-[40%] -translate-x-1/2" : "",
+                index === 1 ? "bottom-8 left-[3%] z-20 h-[62%] w-[26%] rotate-[-4deg]" : "",
+                index === 2 ? "bottom-10 right-[3%] z-20 h-[60%] w-[26%] rotate-[4deg]" : ""
+              ].join(" ")}
+              aria-label={work.title}
+            >
+              <img
+                src={`${work.coverImage}?v=apple-home-1`}
+                alt={work.title}
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]"
+              />
+              <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),transparent_46%,rgba(0,0,0,0.08))]" />
+            </a>
+          ))}
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }
