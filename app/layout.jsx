@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import Script from "next/script";
 import { LiveContentProvider } from "@/components/LiveContentProvider";
 import { siteContent } from "@/data/siteContent";
 
@@ -30,9 +31,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-CN">
-      <body>
-        <LiveContentProvider initialContent={siteContent}>{children}</LiveContentProvider>
-      </body>
-    </html>
+  <head>
+    <link rel="stylesheet" href="/ai-assistant.css?v=next-layout-1" />
+  </head>
+  <body>
+    <LiveContentProvider initialContent={siteContent}>{children}</LiveContentProvider>
+    <Script src="/ai-assistant.js?v=next-layout-1" strategy="afterInteractive" />
+  </body>
+</html>
   );
 }
