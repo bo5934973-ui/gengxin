@@ -3,20 +3,21 @@ import { LiveContentProvider } from "@/components/LiveContentProvider";
 import { siteContent } from "@/data/siteContent";
 
 export const metadata = {
-  title: "Lin Chen - 产品设计工程师",
+  title: "Jason Qiu - 视觉设计师作品集",
   description:
-    "Apple 风格的个人简历交互网站，展示产品设计、前端工程与动效能力。",
+    "Jason Qiu 的个人作品集，展示品牌视觉、电商设计、产品渲染与 AI 视觉创作。",
   keywords: [
-    "产品设计工程师",
-    "前端工程师",
-    "交互简历",
-    "Framer Motion",
-    "个人作品集"
+    "Jason Qiu",
+    "视觉设计师",
+    "品牌视觉设计",
+    "电商视觉设计",
+    "产品渲染",
+    "AI 视觉创作"
   ],
   openGraph: {
-    title: "Lin Chen - 产品设计工程师",
+    title: "Jason Qiu - 视觉设计师作品集",
     description:
-      "一个具备 Apple 产品页质感的个人简历交互体验。",
+      "展示品牌视觉、电商设计、产品渲染与 AI 视觉创作的个人作品集。",
     type: "website"
   }
 };
