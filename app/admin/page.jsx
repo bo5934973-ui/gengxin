@@ -59,7 +59,7 @@ function Field({ label, value, onChange, multiline = false, placeholder = "" }) 
   );
 }
 
-function ArrayField({ label, values, onChange, placeholder }) {
+function ArrayField({ label, values, onChange }) {
   return (
     <Field
       label={label}
@@ -68,8 +68,26 @@ function ArrayField({ label, values, onChange, placeholder }) {
         onChange(value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean))
       }
       multiline
-      placeholder={placeholder}
     />
+  );
+}
+
+function UploadButton({ label, disabled, onUpload }) {
+  return (
+    <label className={`inline-flex cursor-pointer rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium ${disabled ? "pointer-events-none opacity-50" : ""}`}>
+      {label}
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        className="hidden"
+        disabled={disabled}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) onUpload(file);
+        }}
+      />
+    </label>
   );
 }
 
@@ -79,6 +97,7 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadingKey, setUploadingKey] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -127,6 +146,48 @@ export default function AdminPage() {
     setMessage("已保存到本机浏览器草稿。");
   };
 
+  const uploadImage = async (file, onUploaded, label) => {
+    if (!password.trim()) {
+      setMessage("上传图片前，请先在右侧输入后台密码。");
+      return;
+    }
+
+    setUploadingKey(label);
+    setMessage(`正在上传图片：${file.name}`);
+
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const response = await fetch("/.netlify/functions/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          password,
+          filename: file.name,
+          contentType: file.type,
+          data: dataUrl
+        })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "图片上传失败。");
+      }
+
+      onUploaded(data.url);
+      setMessage("图片已上传，并已写入图片路径。记得点击“保存到线上”。");
+    } catch (error) {
+      setMessage(error.message || "图片上传失败。");
+    } finally {
+      setUploadingKey("");
+    }
+  };
+
   const saveOnline = async () => {
     if (!password.trim()) {
       setMessage("请先输入后台密码。");
@@ -166,8 +227,7 @@ export default function AdminPage() {
       setContent(data.content);
       setMessage("已恢复为线上最新内容。");
     } catch {
-      const next = cloneContent(siteContent);
-      setContent(next);
+      setContent(cloneContent(siteContent));
       setMessage("线上内容暂时不可用，已恢复为内置内容。");
     } finally {
       setIsLoading(false);
@@ -189,8 +249,7 @@ export default function AdminPage() {
     if (!file) return;
     try {
       const text = await file.text();
-      const next = JSON.parse(text);
-      setContent(next);
+      setContent(JSON.parse(text));
       setMessage("已导入内容文件，确认无误后可保存到线上。");
     } catch {
       setMessage("导入失败，请确认文件是正确的 JSON。");
@@ -208,8 +267,8 @@ export default function AdminPage() {
           category: "Project Category",
           year: "2026",
           description: "Project description.",
-          coverImage: "/works/dalingring-smart-ring.svg",
-          images: ["/works/dalingring-smart-ring.svg"],
+          coverImage: "/works/dalingring-smart-ring.png",
+          images: ["/works/dalingring-smart-ring.png"],
           tags: ["Tag"],
           slug: slugify(title)
         }
@@ -245,7 +304,7 @@ export default function AdminPage() {
               网站内容后台
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
-              修改文字和图片路径后，输入后台密码并保存到线上。网站刷新后会读取最新内容，不需要重新部署。
+              可直接修改文字，也可以上传作品图片。图片上传后会自动填入路径，最后点击保存到线上。
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -268,7 +327,7 @@ export default function AdminPage() {
         )}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="space-y-6 opacity-100">
+          <div className="space-y-6">
             <SectionCard title="基础信息">
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="网站名称" value={content.site.name} onChange={(value) => setPath(["site", "name"], value)} />
@@ -332,6 +391,7 @@ export default function AdminPage() {
                         删除
                       </button>
                     </div>
+
                     <div className="grid gap-4 md:grid-cols-2">
                       <Field label="标题" value={work.title} onChange={(value) => updateWork(index, "title", value)} />
                       <Field label="链接别名 slug" value={work.slug} onChange={(value) => updateWork(index, "slug", slugify(value))} />
@@ -340,9 +400,40 @@ export default function AdminPage() {
                       <Field label="封面图片路径" value={work.coverImage} onChange={(value) => updateWork(index, "coverImage", value)} />
                       <ArrayField label="标签（一行一个）" values={work.tags} onChange={(value) => updateWork(index, "tags", value)} />
                     </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <UploadButton
+                        label={uploadingKey === `cover-${index}` ? "上传中..." : "上传封面图"}
+                        disabled={Boolean(uploadingKey)}
+                        onUpload={(file) =>
+                          uploadImage(file, (url) => updateWork(index, "coverImage", url), `cover-${index}`)
+                        }
+                      />
+                      {work.coverImage && (
+                        <a href={work.coverImage} target="_blank" className="text-xs text-zinc-500 underline">
+                          预览封面
+                        </a>
+                      )}
+                    </div>
+
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <Field label="作品描述" value={work.description} onChange={(value) => updateWork(index, "description", value)} multiline />
                       <ArrayField label="详情图片路径（一行一个）" values={work.images} onChange={(value) => updateWork(index, "images", value)} />
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <UploadButton
+                        label={uploadingKey === `gallery-${index}` ? "上传中..." : "上传详情图"}
+                        disabled={Boolean(uploadingKey)}
+                        onUpload={(file) =>
+                          uploadImage(
+                            file,
+                            (url) => updateWork(index, "images", [...(work.images || []), url]),
+                            `gallery-${index}`
+                          )
+                        }
+                      />
+                      <span className="text-xs text-zinc-500">详情图会追加到图片列表最后一行。</span>
                     </div>
                   </div>
                 ))}
@@ -354,7 +445,7 @@ export default function AdminPage() {
             <div className="sticky top-20 rounded-3xl border border-black/10 bg-white p-5 shadow-soft">
               <h2 className="text-lg font-semibold">线上保存</h2>
               <p className="mt-2 text-sm leading-6 text-zinc-600">
-                后台密码来自 Netlify 环境变量 ADMIN_PASSWORD。保存后刷新前台页面即可看到变化。
+                后台密码来自 Netlify 环境变量 ADMIN_PASSWORD。上传图片或保存内容都需要这个密码。
               </p>
               <Field
                 label="后台密码"
