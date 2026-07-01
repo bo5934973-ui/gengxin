@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { Mail } from "lucide-react";
-import { Button } from "@/components/Button";
 import { useLiveContent } from "@/components/LiveContentProvider";
 
 export function Contact() {
@@ -22,14 +22,14 @@ export function Contact() {
           {contact.description}
         </p>
         <div className="mt-9">
-          <Button
+          <Link
             href={`mailto:${contact.email}`}
-            className="border-black/10 bg-textDark text-white hover:bg-black"
+            className="inline-flex h-12 items-center justify-center rounded-full border border-black/10 bg-[#1d1d1f] px-7 text-base font-medium text-white shadow-[0_12px_34px_rgba(29,29,31,0.18)] transition hover:bg-black active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#1d1d1f]/25 focus:ring-offset-2 focus:ring-offset-whiteBg"
           >
             {contact.buttonText}
-          </Button>
+          </Link>
         </div>
-        <p className="mt-5 text-sm text-textSoft">{contact.email}</p>
+        <p className="mt-5 text-sm font-medium text-[#6e6e73]">{contact.email}</p>
       </div>
     </section>
   );
