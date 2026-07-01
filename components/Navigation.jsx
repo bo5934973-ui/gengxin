@@ -1,37 +1,117 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform
+} from "framer-motion";
+import { useEffect, useState } from "react";
 import { useLiveContent } from "@/components/LiveContentProvider";
 
 export function Navigation() {
   const { content } = useLiveContent();
   const { site } = content;
+  const [activeHref, setActiveHref] = useState("/#works");
+  const mouseX = useMotionValue(0);
+  const glowX = useSpring(mouseX, { stiffness: 120, damping: 26, mass: 0.35 });
+  const { scrollYProgress } = useScroll();
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const navItems = [
+    { href: "/#works", label: "作品" },
+    { href: "/#about", label: "关于" },
+    { href: "/#contact", label: "联系" }
+  ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visible?.target?.id) {
+          setActiveHref(`/#${visible.target.id}`);
+        }
+      },
+      { threshold: [0.28, 0.44, 0.62], rootMargin: "-18% 0px -44% 0px" }
+    );
+
+    navItems.forEach((item) => {
+      const node = document.getElementById(item.href.replace("/#", ""));
+      if (node) observer.observe(node);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <motion.header
-      initial={{ y: -18, opacity: 0 }}
+      initial={{ y: -24, opacity: 0, scale: 0.96 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-blackBg/60 backdrop-blur-2xl"
+      className="fixed inset-x-0 top-4 z-50 px-4 sm:top-5"
     >
-      <nav className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-6 text-sm text-white/72 md:px-20">
-        <Link href="/" className="font-medium tracking-[0.01em] text-white">
+      <nav
+        onPointerMove={(event) => {
+          const rect = event.currentTarget.getBoundingClientRect();
+          mouseX.set(event.clientX - rect.left);
+        }}
+        className="group relative mx-auto flex h-14 max-w-[1040px] items-center justify-between gap-4 overflow-hidden rounded-full border border-white/[0.13] bg-blackBg/64 px-4 text-sm text-white/70 shadow-[0_20px_70px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl md:px-5"
+        aria-label="主导航"
+      >
+        <motion.span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 h-44 w-44 rounded-full bg-white/16 blur-3xl"
+          style={{ x: glowX }}
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.16),transparent_34%,rgba(255,255,255,0.07)_64%,transparent)] opacity-75"
+        />
+        <motion.span
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 h-px bg-white/42"
+          style={{ width: progressWidth }}
+        />
+        <Link
+          href="/"
+          className="relative z-10 min-w-0 shrink truncate rounded-full px-2 py-2 font-medium tracking-[0.01em] text-white transition hover:text-white/82"
+        >
           {site.name}
         </Link>
-        <div className="flex items-center gap-6">
-          <a className="transition hover:text-white" href="/#works">
-            作品
-          </a>
-          <a className="transition hover:text-white" href="/#about">
-            关于
-          </a>
-          <a className="transition hover:text-white" href="/#contact">
-            联系
-          </a>
-          <Link className="hidden transition hover:text-white sm:inline" href="/admin/">
+        <div className="relative z-10 flex shrink-0 items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.045] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          {navItems.map((item) => (
+            <motion.a
+              key={item.href}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setActiveHref(item.href)}
+              className={`relative rounded-full px-3 py-1.5 text-xs transition sm:px-4 sm:text-sm ${
+                activeHref === item.href ? "text-black" : "text-white/66 hover:text-white"
+              }`}
+              href={item.href}
+            >
+              {activeHref === item.href ? (
+                <motion.span
+                  layoutId="floating-nav-active"
+                  className="absolute inset-0 rounded-full bg-white shadow-[0_8px_26px_rgba(255,255,255,0.16)]"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              ) : null}
+              <span className="relative z-10 whitespace-nowrap">{item.label}</span>
+            </motion.a>
+          ))}
+          <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} className="hidden sm:block">
+            <Link
+              className="block whitespace-nowrap rounded-full px-4 py-1.5 text-sm text-white/66 transition hover:text-white"
+              href="/admin/"
+            >
             管理
-          </Link>
+            </Link>
+          </motion.div>
         </div>
       </nav>
     </motion.header>
